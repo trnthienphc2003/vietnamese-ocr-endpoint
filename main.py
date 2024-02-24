@@ -1,10 +1,12 @@
-from typing import Annotated
-
+from typing import Annotated, Union
 from fastapi import FastAPI, File, UploadFile
-import predict
+# import model
 
 app = FastAPI()
 
+@app.get("/")
+async def read_root():
+    return {"message": "Hello World"}
 
 @app.post("/files/")
 async def create_file(file: Annotated[bytes | None, File()] = None):
@@ -15,8 +17,9 @@ async def create_file(file: Annotated[bytes | None, File()] = None):
 
 
 @app.post("/uploadfile/")
-async def create_upload_file(file: UploadFile | None = None):
-    if not file:
+async def create_upload_file(image: UploadFile):
+    content = image.file.read()
+    if not image:
         return {"message": "No upload file sent"}
     else:
-        return {"filename": file.filename}
+        return {"filename": image.filename}

@@ -20,11 +20,11 @@ from vietocr.vietocr.tool.config import Cfg
 
 from PaddleOCR import PaddleOCR, draw_ocr
 
-from VietnameseOcrCorrection.tool.predictor import Corrector
+# from VietnameseOcrCorrection.tool.predictor import Corrector
 import time
-from VietnameseOcrCorrection.tool.utils import extract_phrases
+# from VietnameseOcrCorrection.tool.utils import extract_phrases
 
-from ultis import display_image_in_actual_size
+# from ultis import display_image_in_actual_size
 
 
 # Specifying output path and font path.
@@ -70,33 +70,43 @@ def predict(recognitor, detector, img_path, padding=4):
 
     return boxes, texts
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--img', required=True, help='foo help')
-    parser.add_argument('--output', required='./runs/predict', help='path to save output file')
-    parser.add_argument('--use_gpu', required=False, help='is use GPU?')
-    args = parser.parse_args()
+config = Cfg.load_config_from_name('vgg_transformer')
+config['cnn']['pretrained'] = True
+config['predictor']['beamsearch'] = True
+config['device'] = 'mps'
 
-    # Configure of VietOCR
-    # Default weight
-    config = Cfg.load_config_from_name('vgg_transformer')
-    # Custom weight
-    # config = Cfg.load_config_from_file('vi00_vi01_transformer.yml')
-    # config['weights'] = './pretrain_ocr/vi00_vi01_transformer.pth'
+recognitor = Predictor(config)
 
-    config['cnn']['pretrained'] = True
-    config['predictor']['beamsearch'] = True
-    config['device'] = 'mps'
+# Config of PaddleOCR
+detector = PaddleOCR(use_angle_cls=False, lang="vi", use_gpu=True)
 
-    recognitor = Predictor(config)
+def model_pipeline():
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--img', required=True, help='foo help')
+    # parser.add_argument('--output', required='./runs/predict', help='path to save output file')
+    # parser.add_argument('--use_gpu', required=False, help='is use GPU?')
+    # args = parser.parse_args()
 
-    # Config of PaddleOCR
-    detector = PaddleOCR(use_angle_cls=False, lang="vi", use_gpu=True)
-    
+    # # Configure of VietOCR
+    # # Default weight
+    # config = Cfg.load_config_from_name('vgg_transformer')
+    # # Custom weight
+    # # config = Cfg.load_config_from_file('vi00_vi01_transformer.yml')
+    # # config['weights'] = './pretrain_ocr/vi00_vi01_transformer.pth'
+
+    # config['cnn']['pretrained'] = True
+    # config['predictor']['beamsearch'] = True
+    # config['device'] = 'mps'
+
+    # recognitor = Predictor(config)
+
+    # # Config of PaddleOCR
+    # detector = PaddleOCR(use_angle_cls=False, lang="vi", use_gpu=True)
 
     # Predict
-    boxes, texts = predict(recognitor, detector, args.img, padding=2)
+    boxes, texts = predict(recognitor, detector, 'tmp.png', padding=2)
+    return boxes, texts
 
 
-if __name__ == "__main__":    
-    main()
+# if __name__ == "__main__":    
+#     main()
